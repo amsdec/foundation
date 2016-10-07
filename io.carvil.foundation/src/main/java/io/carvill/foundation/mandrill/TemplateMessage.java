@@ -130,6 +130,10 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
+    public TemplateMessage replyTo(final String replyEmail) {
+        return this.withHeader("Reply-To", replyEmail);
+    }
+
     public TemplateMessage withVariables(final VariableProvider variableProvider) {
         if (this.mergeVariables == null) {
             this.mergeVariables = new ArrayList<>();
