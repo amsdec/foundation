@@ -22,7 +22,6 @@ public class FakeMandrill extends Mandrill {
 
     @Override
     public void sendTemplate(final TemplateMessage message, final FailedCallback failedCallback) {
-        log.info("Mandril connection is disabled");
         try {
             log.info("EMAIL '{}'", this.objectMapper.writeValueAsString(message));
         } catch (final JsonProcessingException e) {

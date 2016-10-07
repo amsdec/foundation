@@ -176,7 +176,7 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return entity;
     }
 
-    private void setParameters(final Query query, final Object... params) {
+    protected void setParameters(final Query query, final Object... params) {
         if (ArrayUtils.isNotEmpty(params)) {
             int position = 1;
             for (final Object param : params) {
@@ -187,6 +187,10 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
 
     protected Class<T> getType() {
         return this.type;
+    }
+
+    protected EntityManager getManager() {
+        return this.manager;
     }
 
 }
