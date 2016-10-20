@@ -22,12 +22,13 @@ public class Mandrill {
         this.restTemplate = restTemplate;
     }
 
-    public void sendTemplate(final TemplateMessage message) {
+    public <T extends Recipient> void sendTemplate(final TemplateMessage<T> message) {
         this.sendTemplate(message, null);
     }
 
-    public void sendTemplate(final TemplateMessage message, final FailedCallback failedCallback) {
-        final TemplateRequest request = new TemplateRequest(this.apiKey, message.getTemplate(), message);
+    public <T extends Recipient> void sendTemplate(final TemplateMessage<T> message,
+            final FailedCallback failedCallback) {
+        final TemplateRequest<T> request = new TemplateRequest<>(this.apiKey, message.getTemplate(), message);
         final TemplateResponse[] responses = this.restTemplate.postForObject(TEMPLATE_API_URL, request,
                 TemplateResponse[].class);
         if (failedCallback != null) {

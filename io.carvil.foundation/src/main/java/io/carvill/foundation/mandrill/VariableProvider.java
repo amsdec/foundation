@@ -5,8 +5,8 @@ import java.util.Map;
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public interface VariableProvider {
+public interface VariableProvider<T extends Recipient> {
 
-    Map<String, Object> getVariables(final Recipient recipient);
+    Map<String, Object> getVariables(final T recipient);
 
 }

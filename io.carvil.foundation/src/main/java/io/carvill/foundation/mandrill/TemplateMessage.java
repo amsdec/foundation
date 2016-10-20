@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TemplateMessage implements Serializable {
+public class TemplateMessage<T extends Recipient> implements Serializable {
 
     private static final long serialVersionUID = 7003667543188258113L;
 
@@ -39,7 +39,7 @@ public class TemplateMessage implements Serializable {
     private final String fromName;
 
     @JsonProperty("to")
-    private List<Recipient> recipients;
+    private List<T> recipients;
 
     private boolean merge;
 
@@ -64,7 +64,7 @@ public class TemplateMessage implements Serializable {
         this.fromName = fromName;
     }
 
-    public TemplateMessage withRecipient(final List<Recipient> recipients) {
+    public TemplateMessage<T> withRecipient(final List<T> recipients) {
         if (CollectionUtils.isNotEmpty(recipients)) {
             if (this.recipients == null) {
                 this.recipients = recipients;
@@ -75,7 +75,7 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage addRecipient(final Recipient recipient) {
+    public TemplateMessage<T> addRecipient(final T recipient) {
         if (this.recipients == null) {
             this.recipients = new ArrayList<>();
         }
@@ -83,7 +83,7 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage withAttachments(final List<Attachment> attachments) {
+    public TemplateMessage<T> withAttachments(final List<Attachment> attachments) {
         if (CollectionUtils.isNotEmpty(attachments)) {
             if (this.attachments == null) {
                 this.attachments = attachments;
@@ -94,7 +94,7 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage addAttachment(final Attachment attachment) {
+    public TemplateMessage<T> addAttachment(final Attachment attachment) {
         if (this.attachments == null) {
             this.attachments = new ArrayList<>();
         }
@@ -102,16 +102,16 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage useHandlebars() {
+    public TemplateMessage<T> useHandlebars() {
         return this.withMergeLanguage(MergeLanguage.handlebars);
     }
 
-    public TemplateMessage withMergeLanguage(final MergeLanguage mergeLanguage) {
+    public TemplateMessage<T> withMergeLanguage(final MergeLanguage mergeLanguage) {
         this.mergeLanguage = mergeLanguage;
         return this;
     }
 
-    public TemplateMessage withHeaders(final Map<String, String> headers) {
+    public TemplateMessage<T> withHeaders(final Map<String, String> headers) {
         if (MapUtils.isNotEmpty(headers)) {
             if (this.headers == null) {
                 this.headers = headers;
@@ -122,7 +122,7 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage withHeader(final String name, final String value) {
+    public TemplateMessage<T> withHeader(final String name, final String value) {
         if (this.headers == null) {
             this.headers = new HashMap<>();
         }
@@ -130,11 +130,11 @@ public class TemplateMessage implements Serializable {
         return this;
     }
 
-    public TemplateMessage replyTo(final String replyEmail) {
+    public TemplateMessage<T> replyTo(final String replyEmail) {
         return this.withHeader("Reply-To", replyEmail);
     }
 
-    public TemplateMessage withVariables(final VariableProvider variableProvider) {
+    public TemplateMessage<T> withVariables(final VariableProvider<T> variableProvider) {
         if (this.mergeVariables == null) {
             this.mergeVariables = new ArrayList<>();
         }
@@ -143,18 +143,18 @@ public class TemplateMessage implements Serializable {
             throw new IllegalStateException("First add recipients and then call this method");
         }
 
-        for (final Recipient recipient : this.recipients) {
+        for (final T recipient : this.recipients) {
             this.mergeVariables.add(
                     new MergeVariables(recipient.getEmail()).withVariables(variableProvider.getVariables(recipient)));
         }
         return this;
     }
 
-    public List<Recipient> getRecipients() {
+    public List<T> getRecipients() {
         return this.recipients;
     }
 
-    public void setRecipients(final List<Recipient> recipients) {
+    public void setRecipients(final List<T> recipients) {
         this.recipients = recipients;
     }
 

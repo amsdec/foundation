@@ -21,7 +21,8 @@ public class FakeMandrill extends Mandrill {
     }
 
     @Override
-    public void sendTemplate(final TemplateMessage message, final FailedCallback failedCallback) {
+    public <T extends Recipient> void sendTemplate(final TemplateMessage<T> message,
+            final FailedCallback failedCallback) {
         try {
             log.info("EMAIL '{}'", this.objectMapper.writeValueAsString(message));
         } catch (final JsonProcessingException e) {
