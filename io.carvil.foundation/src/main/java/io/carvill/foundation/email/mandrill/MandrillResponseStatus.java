@@ -1,9 +1,9 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public enum ResponseStatus {
+public enum MandrillResponseStatus {
 
     sent,
 

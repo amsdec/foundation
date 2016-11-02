@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class MergeVariables implements Serializable {
+public class MandrillMergeVariables implements Serializable {
 
     private static final long serialVersionUID = 3644354607905219950L;
 
@@ -18,13 +18,13 @@ public class MergeVariables implements Serializable {
     private final String recipient;
 
     @JsonProperty("vars")
-    private List<Variable> variables;
+    private List<MandrillVariable> variables;
 
-    public MergeVariables(final String recipient) {
+    public MandrillMergeVariables(final String recipient) {
         this.recipient = recipient;
     }
 
-    public MergeVariables withVariables(final Map<String, Object> variables) {
+    public MandrillMergeVariables withVariables(final Map<String, Object> variables) {
         if (variables != null) {
             for (final String name : variables.keySet()) {
                 this.withVariable(name, variables.get(name));
@@ -33,11 +33,11 @@ public class MergeVariables implements Serializable {
         return this;
     }
 
-    public MergeVariables withVariable(final String name, final Object content) {
+    public MandrillMergeVariables withVariable(final String name, final Object content) {
         if (this.variables == null) {
             this.variables = new ArrayList<>();
         }
-        this.variables.add(new Variable(name, content));
+        this.variables.add(new MandrillVariable(name, content));
         return this;
     }
 

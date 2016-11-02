@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email;
 
 import java.util.Map;
 

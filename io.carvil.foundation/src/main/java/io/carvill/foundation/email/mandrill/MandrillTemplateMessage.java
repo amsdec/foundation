@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,10 +12,15 @@ import org.apache.commons.collections.MapUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import io.carvill.foundation.email.Attachment;
+import io.carvill.foundation.email.Recipient;
+import io.carvill.foundation.email.To;
+import io.carvill.foundation.email.VariableProvider;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
@@ -23,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TemplateMessage<T extends Recipient> implements Serializable {
+public class MandrillTemplateMessage<T extends Recipient> implements Serializable {
 
     private static final long serialVersionUID = 7003667543188258113L;
 
@@ -39,15 +44,15 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
     private final String fromName;
 
     @JsonProperty("to")
-    private List<T> recipients;
+    private List<To> recipients;
 
     private boolean merge;
 
     @JsonProperty("merge_language")
-    private MergeLanguage mergeLanguage = MergeLanguage.mailchimp;
+    private MandrillMergeLanguage mergeLanguage = MandrillMergeLanguage.mailchimp;
 
     @JsonProperty("merge_vars")
-    private List<MergeVariables> mergeVariables;
+    private List<MandrillMergeVariables> mergeVariables;
 
     @JsonProperty("attachments")
     private List<Attachment> attachments;
@@ -57,33 +62,36 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
     @JsonProperty("html")
     private String html;
 
-    public TemplateMessage(final String template, final String subject, final String fromEmail, final String fromName) {
+    public MandrillTemplateMessage(final String template, final String subject, final String fromEmail,
+            final String fromName) {
         this.template = template;
         this.subject = subject;
         this.fromEmail = fromEmail;
         this.fromName = fromName;
     }
 
-    public TemplateMessage<T> withRecipient(final List<T> recipients) {
+    public MandrillTemplateMessage<T> withRecipients(final List<T> recipients) {
         if (CollectionUtils.isNotEmpty(recipients)) {
-            if (this.recipients == null) {
-                this.recipients = recipients;
-            } else {
-                this.recipients.addAll(recipients);
+            for (T t : recipients) {
+                this.withRecipient(t);
             }
         }
         return this;
     }
 
-    public TemplateMessage<T> addRecipient(final T recipient) {
+    public MandrillTemplateMessage<T> withRecipient(final T recipient) {
+        return this.withRecipient(new To(recipient));
+    }
+
+    public MandrillTemplateMessage<T> withRecipient(final To to) {
         if (this.recipients == null) {
             this.recipients = new ArrayList<>();
         }
-        this.recipients.add(recipient);
+        this.recipients.add(to);
         return this;
     }
 
-    public TemplateMessage<T> withAttachments(final List<Attachment> attachments) {
+    public MandrillTemplateMessage<T> withAttachments(final List<Attachment> attachments) {
         if (CollectionUtils.isNotEmpty(attachments)) {
             if (this.attachments == null) {
                 this.attachments = attachments;
@@ -94,7 +102,7 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
         return this;
     }
 
-    public TemplateMessage<T> addAttachment(final Attachment attachment) {
+    public MandrillTemplateMessage<T> withAttachment(final Attachment attachment) {
         if (this.attachments == null) {
             this.attachments = new ArrayList<>();
         }
@@ -102,16 +110,12 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
         return this;
     }
 
-    public TemplateMessage<T> useHandlebars() {
-        return this.withMergeLanguage(MergeLanguage.handlebars);
-    }
-
-    public TemplateMessage<T> withMergeLanguage(final MergeLanguage mergeLanguage) {
+    public MandrillTemplateMessage<T> withMergeLanguage(final MandrillMergeLanguage mergeLanguage) {
         this.mergeLanguage = mergeLanguage;
         return this;
     }
 
-    public TemplateMessage<T> withHeaders(final Map<String, String> headers) {
+    public MandrillTemplateMessage<T> withHeaders(final Map<String, String> headers) {
         if (MapUtils.isNotEmpty(headers)) {
             if (this.headers == null) {
                 this.headers = headers;
@@ -122,7 +126,7 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
         return this;
     }
 
-    public TemplateMessage<T> withHeader(final String name, final String value) {
+    public MandrillTemplateMessage<T> withHeader(final String name, final String value) {
         if (this.headers == null) {
             this.headers = new HashMap<>();
         }
@@ -130,11 +134,12 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
         return this;
     }
 
-    public TemplateMessage<T> replyTo(final String replyEmail) {
+    public MandrillTemplateMessage<T> replyTo(final String replyEmail) {
         return this.withHeader("Reply-To", replyEmail);
     }
 
-    public TemplateMessage<T> withVariables(final VariableProvider<T> variableProvider) {
+    public MandrillTemplateMessage<T> applyVariables(final List<T> recipients,
+            final VariableProvider<T> variableProvider) {
         if (this.mergeVariables == null) {
             this.mergeVariables = new ArrayList<>();
         }
@@ -143,18 +148,18 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
             throw new IllegalStateException("First add recipients and then call this method");
         }
 
-        for (final T recipient : this.recipients) {
-            this.mergeVariables.add(
-                    new MergeVariables(recipient.getEmail()).withVariables(variableProvider.getVariables(recipient)));
+        for (final T recipient : recipients) {
+            this.mergeVariables.add(new MandrillMergeVariables(recipient.getEmail())
+                    .withVariables(variableProvider.getVariables(recipient)));
         }
         return this;
     }
 
-    public List<T> getRecipients() {
+    public List<To> getRecipients() {
         return this.recipients;
     }
 
-    public void setRecipients(final List<T> recipients) {
+    public void setRecipients(final List<To> recipients) {
         this.recipients = recipients;
     }
 
@@ -166,19 +171,19 @@ public class TemplateMessage<T extends Recipient> implements Serializable {
         this.merge = merge;
     }
 
-    public MergeLanguage getMergeLanguage() {
+    public MandrillMergeLanguage getMergeLanguage() {
         return this.mergeLanguage;
     }
 
-    public void setMergeLanguage(final MergeLanguage mergeLanguage) {
+    public void setMergeLanguage(final MandrillMergeLanguage mergeLanguage) {
         this.mergeLanguage = mergeLanguage;
     }
 
-    public List<MergeVariables> getMergeVariables() {
+    public List<MandrillMergeVariables> getMergeVariables() {
         return this.mergeVariables;
     }
 
-    public void setMergeVariables(final List<MergeVariables> mergeVariables) {
+    public void setMergeVariables(final List<MandrillMergeVariables> mergeVariables) {
         this.mergeVariables = mergeVariables;
     }
 

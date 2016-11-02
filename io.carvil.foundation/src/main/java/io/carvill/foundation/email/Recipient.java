@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com

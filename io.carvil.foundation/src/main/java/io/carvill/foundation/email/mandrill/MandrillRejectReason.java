@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public enum RejectReason {
+public enum MandrillRejectReason {
 
     rejected,
 
@@ -33,7 +33,7 @@ public enum RejectReason {
     unsigned;
 
     @JsonCreator
-    public static RejectReason forValue(final String value) {
+    public static MandrillRejectReason forValue(final String value) {
         if (value == null) {
             return null;
         }

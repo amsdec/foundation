@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import java.io.Serializable;
 
@@ -7,16 +7,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class TemplateResponse implements Serializable {
+public class MandrillTemplateResponse implements Serializable {
 
     private static final long serialVersionUID = -8307385983070851158L;
 
     private String email;
 
-    private ResponseStatus status;
+    private MandrillResponseStatus status;
 
     @JsonProperty("reject_reason")
-    private RejectReason rejectReason;
+    private MandrillRejectReason rejectReason;
 
     @JsonProperty("_id")
     private String id;
@@ -29,19 +29,19 @@ public class TemplateResponse implements Serializable {
         this.email = email;
     }
 
-    public ResponseStatus getStatus() {
+    public MandrillResponseStatus getStatus() {
         return this.status;
     }
 
-    public void setStatus(final ResponseStatus status) {
+    public void setStatus(final MandrillResponseStatus status) {
         this.status = status;
     }
 
-    public RejectReason getRejectReason() {
+    public MandrillRejectReason getRejectReason() {
         return this.rejectReason;
     }
 
-    public void setRejectReason(final RejectReason rejectReason) {
+    public void setRejectReason(final MandrillRejectReason rejectReason) {
         this.rejectReason = rejectReason;
     }
 

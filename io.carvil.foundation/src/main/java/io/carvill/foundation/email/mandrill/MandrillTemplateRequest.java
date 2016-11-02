@@ -1,13 +1,15 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.carvill.foundation.email.Recipient;
+
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class TemplateRequest<T extends Recipient> implements Serializable {
+public class MandrillTemplateRequest<T extends Recipient> implements Serializable {
 
     private static final long serialVersionUID = 6388281617597361944L;
 
@@ -19,9 +21,9 @@ public class TemplateRequest<T extends Recipient> implements Serializable {
     @JsonProperty("template_content")
     private final Object[] templateContent = new Object[] {};
 
-    private final TemplateMessage<T> message;
+    private final MandrillTemplateMessage<T> message;
 
-    public TemplateRequest(final String key, final String templateName, final TemplateMessage<T> message) {
+    public MandrillTemplateRequest(final String key, final String templateName, final MandrillTemplateMessage<T> message) {
         this.key = key;
         this.templateName = templateName;
         this.message = message;
@@ -39,7 +41,7 @@ public class TemplateRequest<T extends Recipient> implements Serializable {
         return this.templateContent;
     }
 
-    public TemplateMessage<T> getMessage() {
+    public MandrillTemplateMessage<T> getMessage() {
         return this.message;
     }
 

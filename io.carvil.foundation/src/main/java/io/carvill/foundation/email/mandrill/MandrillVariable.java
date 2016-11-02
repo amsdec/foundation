@@ -1,11 +1,11 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email.mandrill;
 
 import java.io.Serializable;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class Variable implements Serializable {
+class MandrillVariable implements Serializable {
 
     private static final long serialVersionUID = 662152663728538654L;
 
@@ -13,7 +13,7 @@ public class Variable implements Serializable {
 
     private Object content;
 
-    public Variable(final String name, final Object content) {
+    public MandrillVariable(final String name, final Object content) {
         this.name = name;
         this.content = content;
     }

@@ -1,4 +1,4 @@
-package io.carvill.foundation.mandrill;
+package io.carvill.foundation.email;
 
 import java.io.Serializable;
 
@@ -7,18 +7,15 @@ import org.apache.commons.codec.binary.Base64;
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class Attachment implements Serializable {
+public abstract class Attachment implements Serializable {
 
-    private static final long serialVersionUID = -2058150331677030664L;
+    private static final long serialVersionUID = -7286940086994246828L;
 
     private String type;
 
     private String name;
 
     private String content;
-
-    public Attachment() {
-    }
 
     /**
      * @param type mime type
