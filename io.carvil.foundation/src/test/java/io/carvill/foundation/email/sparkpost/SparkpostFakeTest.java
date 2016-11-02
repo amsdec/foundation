@@ -19,8 +19,9 @@ public class SparkpostFakeTest extends EmailTest {
     private Sparkpost sparkpost;
 
     public SparkpostFakeTest() throws UnsupportedEncodingException {
-        this.sparkpost = new SparkpostFake("[your_api_key]", new ObjectMapper());
-        // this.mandril = new Sparkpost("[your_api_key]");
+        this.sparkpost = new SparkpostFake("team@yourdomain.com", "from name", "[your_api_key]", new ObjectMapper());
+        // this.sparkpost = new Sparkpost("team@yourdomain.com", "from name", "[your_api_key]");
+        this.sparkpost.setReplyTo("no-reply@yourdomain.com");
     }
 
     @Test
@@ -30,7 +31,7 @@ public class SparkpostFakeTest extends EmailTest {
 
     @Override
     public Email<Recipient> build() {
-        return this.sparkpost.buildEmail("from name", "no-reply@yourdomain.com", "template-id", "subject");
+        return this.sparkpost.buildEmail("template-id", "subject");
     }
 
     @Override

@@ -8,8 +8,8 @@ import io.carvill.foundation.email.Recipient;
  */
 public class MandrillEmail<T extends Recipient> extends Email<T> {
 
-    public MandrillEmail(final String fromName, final String fromEmail, final String template, final String subject) {
-        super(fromName, fromEmail, template, subject);
+    public MandrillEmail(final String template, final String subject) {
+        super(template, subject);
     }
 
     @Override

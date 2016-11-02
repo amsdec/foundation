@@ -8,8 +8,8 @@ import io.carvill.foundation.email.Recipient;
  */
 public class SparkpostEmail<T extends Recipient> extends Email<T> {
 
-    public SparkpostEmail(final String fromName, final String fromEmail, final String template, final String subject) {
-        super(fromName, fromEmail, template, subject);
+    public SparkpostEmail(final String template, final String subject) {
+        super(template, subject);
     }
 
     @Override

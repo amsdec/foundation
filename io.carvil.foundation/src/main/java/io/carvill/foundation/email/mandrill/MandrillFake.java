@@ -18,18 +18,23 @@ public class MandrillFake extends Mandrill {
 
     private ObjectMapper objectMapper;
 
-    public MandrillFake(final String apiKey, final ObjectMapper objectMapper) {
-        super(apiKey);
+    public MandrillFake(final String fromEmail, final String fromName, final String apiKey,
+            final ObjectMapper objectMapper) {
+        super(fromEmail, fromName, apiKey);
         this.objectMapper = objectMapper;
     }
 
     @Override
-    protected <T extends Recipient> void send(final MandrillTemplateRequest<T> request, final SentResult result) {
+    protected <T extends Recipient> SentResult send(final MandrillTemplateRequest<T> request) {
+        final SentResult result = new SentResult();
         try {
             log.info("EMAIL '{}'", this.objectMapper.writeValueAsString(request));
+            result.setSuccess(request.getMessage().getRecipients().size());
         } catch (final JsonProcessingException e) {
             log.error("Unable to generate JSON of message", e);
+            result.setFailed(request.getMessage().getRecipients().size());
         }
+        return result;
     }
 
 }

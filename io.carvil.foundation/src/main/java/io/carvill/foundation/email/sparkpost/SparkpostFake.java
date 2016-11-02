@@ -20,18 +20,23 @@ public class SparkpostFake extends Sparkpost {
 
     private ObjectMapper objectMapper;
 
-    public SparkpostFake(final String apiKey, final ObjectMapper objectMapper) throws UnsupportedEncodingException {
-        super(apiKey);
+    public SparkpostFake(final String fromEmail, final String fromName, final String apiKey,
+            final ObjectMapper objectMapper) throws UnsupportedEncodingException {
+        super(fromEmail, fromName, apiKey);
         this.objectMapper = objectMapper;
     }
 
     @Override
-    protected <T extends Recipient> void send(final SparkpostTemplateMessage<T> request, final SentResult result) {
+    protected <T extends Recipient> SentResult send(final SparkpostTemplateMessage<T> request) {
+        final SentResult result = new SentResult();
         try {
             log.info("EMAIL '{}'", this.objectMapper.writeValueAsString(request));
+            result.setSuccess(request.getRecipients().size());
         } catch (final JsonProcessingException e) {
             log.error("Unable to generate JSON of message", e);
+            result.setFailed(request.getRecipients().size());
         }
+        return result;
     }
 
 }

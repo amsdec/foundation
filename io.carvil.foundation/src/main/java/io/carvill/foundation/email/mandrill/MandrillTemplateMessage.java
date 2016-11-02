@@ -117,10 +117,8 @@ public class MandrillTemplateMessage<T extends Recipient> implements Serializabl
 
     public MandrillTemplateMessage<T> withHeaders(final Map<String, String> headers) {
         if (MapUtils.isNotEmpty(headers)) {
-            if (this.headers == null) {
-                this.headers = headers;
-            } else {
-                this.headers.putAll(headers);
+            for (String name : headers.keySet()) {
+                this.withHeader(name, headers.get(name));
             }
         }
         return this;

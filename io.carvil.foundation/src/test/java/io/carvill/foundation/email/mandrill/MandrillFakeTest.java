@@ -15,9 +15,13 @@ import io.carvill.foundation.email.Recipient;
  */
 public class MandrillFakeTest extends EmailTest {
 
-    private Mandrill mandril = new MandrillFake("[your_key_here]", new ObjectMapper());
+    private Mandrill mandril;
 
-    // private Mandrill mandril = new Mandrill("[your_key_here]");
+    public MandrillFakeTest() {
+        this.mandril = new MandrillFake("team@yourdomain.com", "from name", "[your_key_here]", new ObjectMapper());
+        // mandril = new Mandrill("team@yourdomain.com", "from name", "[your_key_here]");
+        this.mandril.setReplyTo("no-reply@yourdomain.com");
+    }
 
     @Test
     public void test() throws IOException {
@@ -26,7 +30,7 @@ public class MandrillFakeTest extends EmailTest {
 
     @Override
     public Email<Recipient> build() {
-        return this.mandril.buildEmail("from name", "no-reply@yourdomain.com", "template-id", "subject");
+        return this.mandril.buildEmail("template-id", "subject");
     }
 
     @Override

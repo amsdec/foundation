@@ -13,10 +13,6 @@ import org.apache.commons.collections.MapUtils;
  */
 public abstract class Email<T extends Recipient> {
 
-    private String fromName;
-
-    private String fromEmail;
-
     private String template;
 
     private String subject;
@@ -29,14 +25,9 @@ public abstract class Email<T extends Recipient> {
 
     private VariableProvider<T> variableProvider;
 
-    private SentResult result;
-
-    public Email(final String fromName, final String fromEmail, final String template, final String subject) {
-        this.fromName = fromName;
-        this.fromEmail = fromEmail;
+    public Email(final String template, final String subject) {
         this.template = template;
         this.subject = subject;
-        this.result = new SentResult();
     }
 
     public Email<T> withRecipient(final List<T> recipients) {
@@ -82,10 +73,6 @@ public abstract class Email<T extends Recipient> {
         return this;
     }
 
-    public Email<T> replyTo(final String replyEmail) {
-        return this.withHeader("Reply-To", replyEmail);
-    }
-
     public abstract Email<T> addAttachment(final String type, final String name, final String content);
 
     public abstract Email<T> addAttachment(final String type, final String name, final byte[] content);
@@ -98,24 +85,8 @@ public abstract class Email<T extends Recipient> {
         return this;
     }
 
-    public String getFromName() {
-        return fromName;
-    }
-
-    public void setFromName(final String fromName) {
-        this.fromName = fromName;
-    }
-
-    public String getFromEmail() {
-        return fromEmail;
-    }
-
-    public void setFromEmail(final String fromEmail) {
-        this.fromEmail = fromEmail;
-    }
-
     public String getTemplate() {
-        return template;
+        return this.template;
     }
 
     public void setTemplate(final String template) {
@@ -123,7 +94,7 @@ public abstract class Email<T extends Recipient> {
     }
 
     public String getSubject() {
-        return subject;
+        return this.subject;
     }
 
     public void setSubject(final String subject) {
@@ -131,7 +102,7 @@ public abstract class Email<T extends Recipient> {
     }
 
     public List<T> getRecipients() {
-        return recipients;
+        return this.recipients;
     }
 
     public void setRecipients(final List<T> recipients) {
@@ -139,7 +110,7 @@ public abstract class Email<T extends Recipient> {
     }
 
     public List<Attachment> getAttachments() {
-        return attachments;
+        return this.attachments;
     }
 
     public void setAttachments(final List<Attachment> attachments) {
@@ -147,7 +118,7 @@ public abstract class Email<T extends Recipient> {
     }
 
     public Map<String, String> getHeaders() {
-        return headers;
+        return this.headers;
     }
 
     public void setHeaders(final Map<String, String> headers) {
@@ -155,19 +126,11 @@ public abstract class Email<T extends Recipient> {
     }
 
     public VariableProvider<T> getVariableProvider() {
-        return variableProvider;
+        return this.variableProvider;
     }
 
     public void setVariableProvider(final VariableProvider<T> variableProvider) {
         this.variableProvider = variableProvider;
-    }
-    
-    public SentResult getResult() {
-        return result;
-    }
-    
-    public void setResult(final SentResult result) {
-        this.result = result;
     }
 
 }

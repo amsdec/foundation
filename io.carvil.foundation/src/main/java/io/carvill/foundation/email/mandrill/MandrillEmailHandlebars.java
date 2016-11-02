@@ -7,9 +7,8 @@ import io.carvill.foundation.email.Recipient;
  */
 public class MandrillEmailHandlebars<T extends Recipient> extends MandrillEmail<T> {
 
-    public MandrillEmailHandlebars(final String fromName, final String fromEmail, final String template,
-            final String subject) {
-        super(fromName, fromEmail, template, subject);
+    public MandrillEmailHandlebars(final String template, final String subject) {
+        super(template, subject);
     }
 
     @Override

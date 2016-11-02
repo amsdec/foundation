@@ -35,11 +35,14 @@ public class Sparkpost extends EmailSender {
 
     private String authorization;
 
-    public Sparkpost(final String apiKey) throws UnsupportedEncodingException {
-        this(apiKey, new RestTemplate());
+    public Sparkpost(final String fromEmail, final String fromName, final String apiKey)
+            throws UnsupportedEncodingException {
+        this(fromEmail, fromName, apiKey, new RestTemplate());
     }
 
-    public Sparkpost(final String apiKey, final RestTemplate restTemplate) throws UnsupportedEncodingException {
+    public Sparkpost(final String fromEmail, final String fromName, final String apiKey,
+            final RestTemplate restTemplate) throws UnsupportedEncodingException {
+        super(fromEmail, fromName);
         this.apiKey = apiKey;
         this.restTemplate = restTemplate;
 
@@ -49,16 +52,17 @@ public class Sparkpost extends EmailSender {
     }
 
     @Override
-    public <T extends Recipient> void send(final Email<T> email) {
+    public <T extends Recipient> SentResult send(final Email<T> email) {
         Assert.isTrue(email instanceof SparkpostEmail);
         final SparkpostTemplateMessage<T> request = new SparkpostTemplateMessage<T>(email.getTemplate(),
-                email.getSubject(), email.getFromEmail(), email.getFromName()).withHeaders(email.getHeaders())
-                        .withAttachments(email.getAttachments())
+                email.getSubject(), this.getFromEmail(), this.getFromName()).replyTo(this.getReplyTo())
+                        .withHeaders(email.getHeaders()).withAttachments(email.getAttachments())
                         .withRecipients(email.getRecipients(), email.getVariableProvider());
-        this.send(request, email.getResult());
+        return this.send(request);
     }
 
-    protected <T extends Recipient> void send(final SparkpostTemplateMessage<T> request, final SentResult result) {
+    protected <T extends Recipient> SentResult send(final SparkpostTemplateMessage<T> request) {
+        final SentResult result = new SentResult();
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", this.authorization);
         headers.add("Content-Type", "application/json");
@@ -81,6 +85,7 @@ public class Sparkpost extends EmailSender {
             result.setFailed(request.getRecipients().size());
             this.logErrors(body.getErrors());
         }
+        return result;
     }
 
     protected void logErrors(final List<SparkpostError> errors) {
@@ -92,9 +97,8 @@ public class Sparkpost extends EmailSender {
     }
 
     @Override
-    public <T extends Recipient> Email<T> buildEmail(final String fromName, final String fromEmail,
-            final String template, final String subject) {
-        return new SparkpostEmail<>(fromName, fromEmail, template, subject);
+    public <T extends Recipient> Email<T> buildEmail(final String template, final String subject) {
+        return new SparkpostEmail<>(template, subject);
     }
 
 }

@@ -10,18 +10,18 @@ import io.carvill.foundation.email.Recipient;
  */
 public class MandrillHandlebars extends Mandrill {
 
-    public MandrillHandlebars(final String apiKey, final RestTemplate restTemplate) {
-        super(apiKey, restTemplate);
+    public MandrillHandlebars(final String fromEmail, final String fromName, final String apiKey,
+            final RestTemplate restTemplate) {
+        super(fromEmail, fromName, apiKey, restTemplate);
     }
 
-    public MandrillHandlebars(final String apiKey) {
-        super(apiKey);
+    public MandrillHandlebars(final String fromEmail, final String fromName, final String apiKey) {
+        super(fromEmail, fromName, apiKey);
     }
 
     @Override
-    public <T extends Recipient> Email<T> buildEmail(final String fromName, final String fromEmail,
-            final String template, final String subject) {
-        return new MandrillEmailHandlebars<>(fromName, fromEmail, template, subject);
+    public <T extends Recipient> Email<T> buildEmail(final String template, final String subject) {
+        return new MandrillEmailHandlebars<>(template, subject);
     }
 
 }
