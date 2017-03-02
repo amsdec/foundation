@@ -8,6 +8,9 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.hibernate.SQLQuery;
+import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,18 +97,18 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> select(final String name, final Object... parameters) {
-        return this.select(name, this.type, parameters);
+        return GenericDAO.this.select(name, this.type, parameters);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> List<S> select(final String name, final Class<S> type, final Object... parameters) {
-        return this.paginate(name, type, 0, -1, parameters);
+        return GenericDAO.this.paginate(name, type, 0, -1, parameters);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> paginate(final String name, final int maxResults, final int firstResult,
             final Object... parameters) {
-        return this.paginate(name, this.type, maxResults, firstResult, parameters);
+        return GenericDAO.this.paginate(name, this.type, maxResults, firstResult, parameters);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -120,6 +123,41 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
             query.setFirstResult(firstResult);
         }
         return query.getResultList();
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    protected List<T> selectSQL(final String sql, final Object... parameters) {
+        return GenericDAO.this.selectSQL(sql, this.type, parameters);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    protected <S> List<S> selectSQL(final String sql, final Class<S> type, final Object... parameters) {
+        return GenericDAO.this.paginateSQL(sql, type, 0, -1, parameters);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    protected List<T> paginateSQL(final String sql, final int maxResults, final int firstResult,
+            final Object... parameters) {
+        return GenericDAO.this.paginateSQL(sql, this.type, maxResults, firstResult, parameters);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    protected <S> List<S> paginateSQL(final String sql, final Class<S> type, final int maxResults,
+            final int firstResult, final Object... parameters) {
+        final HibernateEntityManager hem = this.manager.unwrap(HibernateEntityManager.class);
+        final SQLQuery query = hem.getSession().createSQLQuery(sql);
+        query.setResultTransformer(Transformers.aliasToBean(type));
+        if (maxResults > 0) {
+            query.setMaxResults(maxResults);
+        }
+        if (firstResult >= 0) {
+            query.setFirstResult(firstResult);
+        }
+        for (int index = 0; index < parameters.length; index++) {
+            query.setParameter(index, parameters[index]);
+        }
+        return query.list();
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
