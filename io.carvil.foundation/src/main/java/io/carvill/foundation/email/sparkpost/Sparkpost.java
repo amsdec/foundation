@@ -12,20 +12,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import io.carvill.foundation.email.Email;
 import io.carvill.foundation.email.EmailSender;
 import io.carvill.foundation.email.Recipient;
 import io.carvill.foundation.email.SentResult;
-import io.carvill.foundation.email.mandrill.MandrillFake;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
 public class Sparkpost extends EmailSender {
 
-    private final static Logger log = LoggerFactory.getLogger(MandrillFake.class);
+    private final static Logger log = LoggerFactory.getLogger(Sparkpost.class);
 
     public static final String TEMPLATE_API_URL = "https://api.sparkpost.com/api/v1/transmissions";
 
@@ -68,29 +68,33 @@ public class Sparkpost extends EmailSender {
         headers.add("Content-Type", "application/json");
         headers.add("Accept", "application/json");
         final HttpEntity<SparkpostTemplateMessage<T>> entity = new HttpEntity<>(request, headers);
-
-        final ResponseEntity<SparkpostResponse> response = this.restTemplate.exchange(TEMPLATE_API_URL, HttpMethod.POST,
-                entity, SparkpostResponse.class);
-        final SparkpostResponse body = response.getBody();
-        if (CollectionUtils.isEmpty(body.getErrors())) {
-            final SparkpostResults content = body.getResults();
-            if (content == null) {
-                result.setFailed(request.getRecipients().size());
+        try {
+            final ResponseEntity<SparkpostResponse> response = this.restTemplate.exchange(TEMPLATE_API_URL,
+                    HttpMethod.POST, entity, SparkpostResponse.class);
+            final SparkpostResponse body = response.getBody();
+            if (CollectionUtils.isEmpty(body.getErrors())) {
+                final SparkpostResults content = body.getResults();
+                if (content == null) {
+                    result.setFailed(request.getRecipients().size());
+                } else {
+                    this.logErrors(content.getErrors());
+                    result.setSuccess(content.getAccepted());
+                    result.setFailed(content.getRejected());
+                }
             } else {
-                this.logErrors(content.getErrors());
-                result.setSuccess(content.getAccepted());
-                result.setFailed(content.getRejected());
+                result.setFailed(request.getRecipients().size());
+                this.logErrors(body.getErrors());
             }
-        } else {
+        } catch (final RestClientException e) {
             result.setFailed(request.getRecipients().size());
-            this.logErrors(body.getErrors());
+            log.warn("Unable to send email because: {}", e.getMessage(), e);
         }
         return result;
     }
 
     protected void logErrors(final List<SparkpostError> errors) {
         if (CollectionUtils.isNotEmpty(errors)) {
-            for (SparkpostError error : errors) {
+            for (final SparkpostError error : errors) {
                 log.warn("Email error -> {}", error);
             }
         }

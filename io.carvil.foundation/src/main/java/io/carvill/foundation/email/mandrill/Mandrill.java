@@ -1,6 +1,9 @@
 package io.carvill.foundation.email.mandrill;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import io.carvill.foundation.email.Email;
@@ -12,6 +15,8 @@ import io.carvill.foundation.email.SentResult;
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
 public class Mandrill extends EmailSender {
+    
+    private final static Logger log = LoggerFactory.getLogger(Mandrill.class);
 
     public static final String TEMPLATE_API_URL = "https://mandrillapp.com/api/1.0/messages/send-template.json";
 
@@ -48,17 +53,22 @@ public class Mandrill extends EmailSender {
 
     protected <T extends Recipient> SentResult send(final MandrillTemplateRequest<T> request) {
         final SentResult result = new SentResult();
-        final MandrillTemplateResponse[] responses = this.restTemplate.postForObject(TEMPLATE_API_URL, request,
-                MandrillTemplateResponse[].class);
-        for (final MandrillTemplateResponse response : responses) {
-            switch (response.getStatus()) {
-            case invalid:
-            case rejected:
-                result.reportError(response.getEmail(), response.getRejectReason().name());
-                break;
-            default:
-                result.incrementSuccess();
+        try {
+            final MandrillTemplateResponse[] responses = this.restTemplate.postForObject(TEMPLATE_API_URL, request,
+                    MandrillTemplateResponse[].class);
+            for (final MandrillTemplateResponse response : responses) {
+                switch (response.getStatus()) {
+                case invalid:
+                case rejected:
+                    result.reportError(response.getEmail(), response.getRejectReason().name());
+                    break;
+                default:
+                    result.incrementSuccess();
+                }
             }
+        } catch (final RestClientException e) {
+            result.setFailed(request.getMessage().getRecipients().size());
+            log.warn("Unable to send email because: {}", e.getMessage(), e);
         }
         return result;
     }
