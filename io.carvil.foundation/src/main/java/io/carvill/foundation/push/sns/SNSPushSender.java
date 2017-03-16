@@ -155,8 +155,12 @@ public class SNSPushSender implements PushSender {
         endpointAttributesRequest.setEndpointArn(device.getExtra());
         endpointAttributesRequest.addAttributesEntry("Enabled", "true");
 
-        this.amazonSNS.setEndpointAttributes(endpointAttributesRequest);
-        log.debug("Endpoint was enabled");
+        try {
+            this.amazonSNS.setEndpointAttributes(endpointAttributesRequest);
+            log.debug("Endpoint was enabled");
+        } catch (final RuntimeException e) {
+            throw new PushException("Device was not enabled into Amazon SNS: %s", e, e.getMessage());
+        }
     }
 
     public String getKey() {
