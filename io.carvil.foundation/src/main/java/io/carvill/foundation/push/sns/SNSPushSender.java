@@ -50,11 +50,11 @@ public class SNSPushSender implements PushSender {
         this.objectMapper = new ObjectMapper();
     }
 
-    public SNSPushSender(final String key, final String secret, final String applicationARN) {
-        this(key, secret, applicationARN, new ObjectMapper());
+    public SNSPushSender(final String key, final String secret, final String applicationARN, final String region) {
+        this(key, secret, applicationARN, region, new ObjectMapper());
     }
 
-    public SNSPushSender(final String key, final String secret, final String applicationARN,
+    public SNSPushSender(final String key, final String secret, final String applicationARN, final String region,
             final ObjectMapper objectMapper) {
         this.key = key;
         this.secret = secret;
@@ -62,9 +62,10 @@ public class SNSPushSender implements PushSender {
         this.objectMapper = objectMapper;
 
         this.amazonSNS = new AmazonSNSClient(new BasicAWSCredentials(this.key, this.secret));
-        if (StringUtils.isNotBlank(this.region)) {
+        if (StringUtils.isNotBlank(region)) {
             try {
-                this.amazonSNS.setRegion(Region.getRegion(Regions.fromName(this.region)));
+                this.amazonSNS.setRegion(Region.getRegion(Regions.fromName(region)));
+                this.region = region;
             } catch (final RuntimeException e) {
                 log.warn("Region parameter '{}' is invalid: {}", this.region, e.getMessage());
             }
@@ -104,9 +105,9 @@ public class SNSPushSender implements PushSender {
                     throw new PushException("AWS SNS throws an error on retry sending push: %s ", re, re.getMessage());
                 }
             } catch (final JsonProcessingException e) {
-                throw new PushException("JSON to push can not be generated", e);
+                throw new PushException("JSON to push can not be generated: %s", e, e.getMessage());
             } catch (final RuntimeException e) {
-                throw new PushException("AWS SNS throws an error sending push", e);
+                throw new PushException("AWS SNS throws an error sending push: %s", e, e.getMessage());
             }
         }
         return null;
@@ -139,7 +140,7 @@ public class SNSPushSender implements PushSender {
         } catch (final InvalidParameterException e) {
             throw new PushException("Invalid token: %s", e, e.getMessage());
         } catch (final RuntimeException e) {
-            throw new PushException("Device was not registered into Amazon SNS", e);
+            throw new PushException("Device was not registered into Amazon SNS: %s", e, e.getMessage());
         }
     }
 
@@ -172,10 +173,6 @@ public class SNSPushSender implements PushSender {
 
     public String getRegion() {
         return this.region;
-    }
-
-    public void setRegion(final String region) {
-        this.region = region;
     }
 
 }
