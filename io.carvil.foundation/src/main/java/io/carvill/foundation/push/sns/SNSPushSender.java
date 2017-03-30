@@ -77,13 +77,19 @@ public class SNSPushSender implements PushSender {
             final boolean isSandbox) throws PushException {
         if (StringUtils.isBlank(device.getExtra())) {
             log.warn("Device data object does not containt endpoint ARN into 'extra' field");
-        } else if (!OS.IOS.equals(device.getDevice())) {
-            log.warn("Push notifications are only implemented for IOS");
         } else {
-            final SNSPushPlatform platform = isSandbox ? SNSPushPlatform.APNS_SANDBOX : SNSPushPlatform.APNS;
+            final SNSPushPlatform platform;
+            final SNSPushData data;
+            if (OS.IOS.equals(device.getDevice())) {
+                platform = isSandbox ? SNSPushPlatform.APNS_SANDBOX : SNSPushPlatform.APNS;
+                data = new SNSPushDataAPNS(alert, parameters);
+            } else {
+                platform = SNSPushPlatform.GCM;
+                data = new SNSPushDataAndroid(alert, parameters);
+            }
+
             final PublishRequest request = new PublishRequest();
             try {
-                final SNSPushData data = new SNSPushData(alert, parameters);
                 final Map<String, Object> message = new HashMap<>();
                 message.put("default", "");
                 message.put(platform.name(), this.objectMapper.writeValueAsString(data));
@@ -121,17 +127,12 @@ public class SNSPushSender implements PushSender {
 
     @Override
     public String registerDevice(final Device device) throws PushException {
-        if (OS.ANDROID.equals(device.getDevice())) {
-            log.warn("Android is not supported yet");
-            return null;
-        }
-
         final CreatePlatformEndpointRequest platformEndpointRequest = new CreatePlatformEndpointRequest();
-        platformEndpointRequest.setCustomUserData("SNS push notification");
+        platformEndpointRequest.setCustomUserData(device.getCustomerUserData());
         platformEndpointRequest.setToken(device.getToken());
         platformEndpointRequest.setPlatformApplicationArn(this.applicationARN);
 
-        log.debug("Registering device at Amazon SNS");
+        log.debug("Registering {}  device at Amazon SNS", device.getDevice());
         try {
             final CreatePlatformEndpointResult response = this.amazonSNS
                     .createPlatformEndpoint(platformEndpointRequest);
@@ -140,17 +141,13 @@ public class SNSPushSender implements PushSender {
         } catch (final InvalidParameterException e) {
             throw new PushException("Invalid token: %s", e, e.getMessage());
         } catch (final RuntimeException e) {
-            throw new PushException("Device was not registered into Amazon SNS: %s", e, e.getMessage());
+            throw new PushException("Device %s was not registered into Amazon SNS: %s", e, device.getDevice(),
+                    e.getMessage());
         }
     }
 
     @Override
     public void enableDevice(final Device device) throws PushException {
-        if (OS.ANDROID.equals(device.getDevice())) {
-            log.warn("Android is not supported yet");
-            return;
-        }
-
         final SetEndpointAttributesRequest endpointAttributesRequest = new SetEndpointAttributesRequest();
         endpointAttributesRequest.setEndpointArn(device.getExtra());
         endpointAttributesRequest.addAttributesEntry("Enabled", "true");
@@ -159,7 +156,8 @@ public class SNSPushSender implements PushSender {
             this.amazonSNS.setEndpointAttributes(endpointAttributesRequest);
             log.debug("Endpoint was enabled");
         } catch (final RuntimeException e) {
-            throw new PushException("Device was not enabled into Amazon SNS: %s", e, e.getMessage());
+            throw new PushException("Device %s was not enabled into Amazon SNS: %s", e, device.getDevice(),
+                    e.getMessage());
         }
     }
 

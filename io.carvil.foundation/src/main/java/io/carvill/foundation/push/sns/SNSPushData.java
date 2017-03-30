@@ -4,35 +4,17 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
-public class SNSPushData implements Serializable {
+public abstract class SNSPushData implements Serializable {
 
-    private static final long serialVersionUID = -4902085924121325191L;
+    private static final long serialVersionUID = -1505349149455790313L;
 
-    @JsonProperty("aps")
     private final Map<String, Object> parameters;
 
-    public SNSPushData(final String alert) {
-        this(alert, null);
-    }
-
-    public SNSPushData(final String alert, final Map<String, Object> parameters) {
+    public SNSPushData() {
         this.parameters = new HashMap<>();
-        if (StringUtils.isBlank(alert)) {
-            this.putData("content-available", true);
-            this.putData("priority", "10");
-            this.putData("badge", "1");
-        } else {
-            this.putData("sound", "default");
-            this.putData("alert", alert);
-        }
-        this.putData(parameters);
     }
 
     public void putData(final Map<String, Object> parameters) {

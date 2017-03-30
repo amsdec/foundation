@@ -11,4 +11,8 @@ public interface Device {
 
     OS getDevice();
 
+    default String getCustomerUserData() {
+        return "SNS push notification";
+    }
+
 }

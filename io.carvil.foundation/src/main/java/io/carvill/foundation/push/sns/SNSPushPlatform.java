@@ -7,6 +7,8 @@ public enum SNSPushPlatform {
 
     APNS,
 
-    APNS_SANDBOX
+    APNS_SANDBOX,
+
+    GCM
 
 }
