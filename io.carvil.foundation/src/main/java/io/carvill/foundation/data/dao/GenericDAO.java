@@ -3,9 +3,12 @@ package io.carvill.foundation.data.dao;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.SQLQuery;
@@ -40,7 +43,7 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return entity;
     }
 
-    @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+    @Transactional(readOnly = false, propagation = Propagation.MANDATORY)
     public T merge(final T entity) {
         return this.manager.merge(entity);
     }
@@ -65,7 +68,6 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return query.executeUpdate();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public T find(final ID primaryKey, final T defaultValue) {
         try {
             return this.find(primaryKey);
@@ -74,7 +76,6 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         }
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public T find(final ID primaryKey) throws MissingException {
         try {
             final T entity = this.manager.find(this.type, primaryKey);
@@ -95,23 +96,19 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         }
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> select(final String name, final Object... parameters) {
         return GenericDAO.this.select(name, this.type, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> List<S> select(final String name, final Class<S> type, final Object... parameters) {
         return GenericDAO.this.paginate(name, type, 0, -1, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> paginate(final String name, final int maxResults, final int firstResult,
             final Object... parameters) {
         return GenericDAO.this.paginate(name, this.type, maxResults, firstResult, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> List<S> paginate(final String name, final Class<S> type, final int maxResults, final int firstResult,
             final Object... parameters) {
         final TypedQuery<S> query = this.manager.createNamedQuery(name, type);
@@ -125,24 +122,20 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return query.getResultList();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> selectSQL(final String sql, final Object... parameters) {
         return GenericDAO.this.selectSQL(sql, this.type, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> List<S> selectSQL(final String sql, final Class<S> type, final Object... parameters) {
         return GenericDAO.this.paginateSQL(sql, type, 0, -1, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected List<T> paginateSQL(final String sql, final int maxResults, final int firstResult,
             final Object... parameters) {
         return GenericDAO.this.paginateSQL(sql, this.type, maxResults, firstResult, parameters);
     }
 
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> List<S> paginateSQL(final String sql, final Class<S> type, final int maxResults,
             final int firstResult, final Object... parameters) {
         final HibernateEntityManager hem = this.manager.unwrap(HibernateEntityManager.class);
@@ -160,12 +153,10 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return query.list();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected T first(final String name, final Object... params) throws MissingException {
         return this.first(name, this.type, params);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> S first(final String name, final Class<S> type, final Object... params) throws MissingException {
         final List<S> list = this.paginate(name, type, 1, 0, params);
         if (list.isEmpty()) {
@@ -174,17 +165,14 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return list.get(0);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected T single(final String name, final Object... parameters) throws MissingException {
         return this.single(name, this.type, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected T singleQuiet(final String name, final T defaultValue, final Object... parameters) {
         return this.singleQuiet(name, this.type, defaultValue, parameters);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> S singleQuiet(final String name, final Class<S> type, final S defaultValue,
             final Object... parameters) {
         try {
@@ -197,7 +185,6 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return defaultValue;
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     protected <S> S single(final String name, final Class<S> type, final Object... parameters) throws MissingException {
         final TypedQuery<S> query = this.manager.createNamedQuery(name, type);
         this.setParameters(query, parameters);
@@ -208,7 +195,27 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         }
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.MANDATORY)
+    protected T blockSingle(final String name, final Object... parameters) throws MissingException {
+        return this.blockSingle(name, this.type, parameters);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    protected <S> S blockSingle(final String name, final Class<S> type, final Object... parameters)
+            throws MissingException {
+        final TypedQuery<S> query = this.manager.createNamedQuery(name, type);
+        this.setParameters(query, parameters);
+        query.setMaxResults(1);
+        query.setFirstResult(0);
+        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+
+        final List<S> result = query.getResultList();
+        if (result.isEmpty()) {
+            throw new MissingException("Query '%s' did not block any resource [type: %s]", name, type.getSimpleName());
+        }
+        return result.get(0);
+    }
+
     public T detach(final T entity) {
         this.manager.detach(entity);
         return entity;
@@ -229,6 +236,18 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
 
     protected EntityManager getManager() {
         return this.manager;
+    }
+
+    protected CriteriaQuery<T> createCriteria() {
+        return this.createCriteria(this.type);
+    }
+
+    protected <S> CriteriaQuery<S> createCriteria(final Class<S> type) {
+        return this.getCriteriaBuilder().createQuery(type);
+    }
+
+    protected CriteriaBuilder getCriteriaBuilder() {
+        return this.manager.getCriteriaBuilder();
     }
 
 }

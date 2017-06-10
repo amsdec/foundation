@@ -15,7 +15,7 @@ import io.carvill.foundation.email.SentResult;
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
 public class Mandrill extends EmailSender {
-    
+
     private final static Logger log = LoggerFactory.getLogger(Mandrill.class);
 
     public static final String TEMPLATE_API_URL = "https://mandrillapp.com/api/1.0/messages/send-template.json";
@@ -37,7 +37,7 @@ public class Mandrill extends EmailSender {
 
     @Override
     public <T extends Recipient> SentResult send(final Email<T> email) {
-        Assert.isTrue(email instanceof MandrillEmail);
+        Assert.isTrue(email instanceof MandrillEmail, "Expected MandrillEmail instance");
         final MandrillEmail<T> info = (MandrillEmail<T>) email;
 
         final MandrillTemplateMessage<T> message = new MandrillTemplateMessage<T>(info.getTemplate(), info.getSubject(),

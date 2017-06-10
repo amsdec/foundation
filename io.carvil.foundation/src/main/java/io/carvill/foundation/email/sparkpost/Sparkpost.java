@@ -53,7 +53,7 @@ public class Sparkpost extends EmailSender {
 
     @Override
     public <T extends Recipient> SentResult send(final Email<T> email) {
-        Assert.isTrue(email instanceof SparkpostEmail);
+        Assert.isTrue(email instanceof SparkpostEmail, "Expected SparkpostEmail instance");
         final SparkpostTemplateMessage<T> request = new SparkpostTemplateMessage<T>(email.getTemplate(),
                 email.getSubject(), this.getFromEmail(), this.getFromName()).replyTo(this.getReplyTo())
                         .withHeaders(email.getHeaders()).withAttachments(email.getAttachments())

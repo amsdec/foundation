@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import io.carvill.foundation.email.Attachment;
+import io.carvill.foundation.email.MergeLanguage;
 import io.carvill.foundation.email.Recipient;
 import io.carvill.foundation.email.To;
 import io.carvill.foundation.email.VariableProvider;
@@ -49,7 +50,7 @@ public class MandrillTemplateMessage<T extends Recipient> implements Serializabl
     private boolean merge;
 
     @JsonProperty("merge_language")
-    private MandrillMergeLanguage mergeLanguage = MandrillMergeLanguage.mailchimp;
+    private MergeLanguage mergeLanguage = MergeLanguage.mailchimp;
 
     @JsonProperty("merge_vars")
     private List<MandrillMergeVariables> mergeVariables;
@@ -110,7 +111,7 @@ public class MandrillTemplateMessage<T extends Recipient> implements Serializabl
         return this;
     }
 
-    public MandrillTemplateMessage<T> withMergeLanguage(final MandrillMergeLanguage mergeLanguage) {
+    public MandrillTemplateMessage<T> withMergeLanguage(final MergeLanguage mergeLanguage) {
         this.mergeLanguage = mergeLanguage;
         return this;
     }
@@ -169,11 +170,11 @@ public class MandrillTemplateMessage<T extends Recipient> implements Serializabl
         this.merge = merge;
     }
 
-    public MandrillMergeLanguage getMergeLanguage() {
+    public MergeLanguage getMergeLanguage() {
         return this.mergeLanguage;
     }
 
-    public void setMergeLanguage(final MandrillMergeLanguage mergeLanguage) {
+    public void setMergeLanguage(final MergeLanguage mergeLanguage) {
         this.mergeLanguage = mergeLanguage;
     }
 

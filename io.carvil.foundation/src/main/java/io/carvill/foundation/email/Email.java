@@ -30,7 +30,7 @@ public abstract class Email<T extends Recipient> {
         this.subject = subject;
     }
 
-    public Email<T> withRecipient(final List<T> recipients) {
+    public Email<T> withRecipients(final List<T> recipients) {
         if (CollectionUtils.isNotEmpty(recipients)) {
             if (this.recipients == null) {
                 this.recipients = recipients;
@@ -76,6 +76,8 @@ public abstract class Email<T extends Recipient> {
     public abstract Email<T> addAttachment(final String type, final String name, final String content);
 
     public abstract Email<T> addAttachment(final String type, final String name, final byte[] content);
+
+    public abstract void setMergeLanguage(final MergeLanguage mergeLanguage);
 
     protected Email<T> addAttachment(final Attachment attachment) {
         if (this.attachments == null) {

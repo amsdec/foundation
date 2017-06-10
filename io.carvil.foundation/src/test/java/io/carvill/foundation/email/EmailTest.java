@@ -44,7 +44,7 @@ public abstract class EmailTest {
         };
 
         try (InputStream attachment = this.getClass().getClassLoader().getResourceAsStream("readme.txt")) {
-            final Email<Recipient> email = this.build().withRecipient(Arrays.asList(recipient, recipient2))
+            final Email<Recipient> email = this.build().withRecipients(Arrays.asList(recipient, recipient2))
                     .withVariableProvider(new VariableProvider<Recipient>() {
 
                         @Override

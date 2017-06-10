@@ -1,6 +1,7 @@
 package io.carvill.foundation.email.sparkpost;
 
 import io.carvill.foundation.email.Email;
+import io.carvill.foundation.email.MergeLanguage;
 import io.carvill.foundation.email.Recipient;
 
 /**
@@ -20,6 +21,10 @@ public class SparkpostEmail<T extends Recipient> extends Email<T> {
     @Override
     public Email<T> addAttachment(final String type, final String name, final byte[] content) {
         return this.addAttachment(new SparkpostAttachment(type, name, content));
+    }
+
+    @Override
+    public void setMergeLanguage(final MergeLanguage mergeLanguage) {
     }
 
 }

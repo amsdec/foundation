@@ -8,11 +8,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.EndpointDisabledException;
@@ -61,15 +60,18 @@ public class SNSPushSender implements PushSender {
         this.applicationARN = applicationARN;
         this.objectMapper = objectMapper;
 
-        this.amazonSNS = new AmazonSNSClient(new BasicAWSCredentials(this.key, this.secret));
+        final AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(
+                new BasicAWSCredentials(this.key, this.secret));
+        final AmazonSNSClientBuilder builder = AmazonSNSClientBuilder.standard().withCredentials(credentialsProvider);
         if (StringUtils.isNotBlank(region)) {
             try {
-                this.amazonSNS.setRegion(Region.getRegion(Regions.fromName(region)));
                 this.region = region;
+                builder.withRegion(this.region);
             } catch (final RuntimeException e) {
                 log.warn("Region parameter '{}' is invalid: {}", this.region, e.getMessage());
             }
         }
+        this.amazonSNS = builder.build();
     }
 
     @Override

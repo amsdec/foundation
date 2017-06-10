@@ -1,12 +1,15 @@
 package io.carvill.foundation.email.mandrill;
 
 import io.carvill.foundation.email.Email;
+import io.carvill.foundation.email.MergeLanguage;
 import io.carvill.foundation.email.Recipient;
 
 /**
  * @author Carlos Carpio, carlos.carpio07@gmail.com
  */
 public class MandrillEmail<T extends Recipient> extends Email<T> {
+
+    private MergeLanguage mergeLanguage = MergeLanguage.mailchimp;
 
     public MandrillEmail(final String template, final String subject) {
         super(template, subject);
@@ -22,8 +25,15 @@ public class MandrillEmail<T extends Recipient> extends Email<T> {
         return this.addAttachment(new MandrillAttachment(type, name, content));
     }
 
-    public MandrillMergeLanguage getMandrillMergeLanguage() {
-        return MandrillMergeLanguage.mailchimp;
+    public MergeLanguage getMandrillMergeLanguage() {
+        return this.mergeLanguage;
+    }
+
+    @Override
+    public void setMergeLanguage(final MergeLanguage mergeLanguage) {
+        if (mergeLanguage != null) {
+            this.mergeLanguage = mergeLanguage;
+        }
     }
 
 }

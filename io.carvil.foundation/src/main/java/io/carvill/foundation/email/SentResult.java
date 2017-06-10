@@ -28,7 +28,7 @@ public class SentResult {
     }
 
     public int getSuccess() {
-        return success;
+        return this.success;
     }
 
     public void setSuccess(final int success) {
@@ -36,7 +36,7 @@ public class SentResult {
     }
 
     public int getFailed() {
-        return failed;
+        return this.failed;
     }
 
     public void setFailed(final int failed) {
@@ -44,11 +44,24 @@ public class SentResult {
     }
 
     public Map<String, String> getErrors() {
-        return errors;
+        return this.errors;
     }
 
     public void setErrors(final Map<String, String> errors) {
         this.errors = errors;
+    }
+
+    public boolean isSuccessfullSingle() {
+        return this.isSuccessfull(1);
+    }
+
+    public boolean isSuccessfull(final int number) {
+        return this.success == number;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Email stats [success=%s, failed=%s, errors=%s]", this.success, this.failed, this.errors);
     }
 
 }
