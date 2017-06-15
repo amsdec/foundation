@@ -111,6 +111,11 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
 
     protected <S> List<S> paginate(final String name, final Class<S> type, final int maxResults, final int firstResult,
             final Object... parameters) {
+        return GenericDAO.this.paginate(name, type, maxResults, firstResult, null, parameters);
+    }
+
+    private <S> List<S> paginate(final String name, final Class<S> type, final int maxResults, final int firstResult,
+            final LockModeType lockMode, final Object... parameters) {
         final TypedQuery<S> query = this.manager.createNamedQuery(name, type);
         this.setParameters(query, parameters);
         if (maxResults > 0) {
@@ -118,6 +123,10 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         }
         if (firstResult >= 0) {
             query.setFirstResult(firstResult);
+        }
+
+        if (lockMode != null) {
+            query.setLockMode(lockMode);
         }
         return query.getResultList();
     }
@@ -153,12 +162,24 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
         return query.list();
     }
 
+    @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+    protected int updateSQL(final String sql, final Object... parameters) {
+        final Query query = this.manager.createNativeQuery(sql);
+        this.setParameters(query, parameters);
+        return query.executeUpdate();
+    }
+
     protected T first(final String name, final Object... params) throws MissingException {
-        return this.first(name, this.type, params);
+        return GenericDAO.this.first(name, this.type, params);
     }
 
     protected <S> S first(final String name, final Class<S> type, final Object... params) throws MissingException {
-        final List<S> list = this.paginate(name, type, 1, 0, params);
+        return GenericDAO.this.first(name, type, null, params);
+    }
+
+    private <S> S first(final String name, final Class<S> type, final LockModeType lockMode, final Object... params)
+            throws MissingException {
+        final List<S> list = GenericDAO.this.paginate(name, type, 1, 0, lockMode, params);
         if (list.isEmpty()) {
             throw new MissingException("There are not result for query '%s' [type: %s]", name, type.getSimpleName());
         }
@@ -197,23 +218,26 @@ public class GenericDAO<T extends GenericEntity<ID>, ID extends Number> {
 
     @Transactional(propagation = Propagation.MANDATORY)
     protected T blockSingle(final String name, final Object... parameters) throws MissingException {
-        return this.blockSingle(name, this.type, parameters);
+        return GenericDAO.this.blockSingle(name, this.type, parameters);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
     protected <S> S blockSingle(final String name, final Class<S> type, final Object... parameters)
             throws MissingException {
-        final TypedQuery<S> query = this.manager.createNamedQuery(name, type);
-        this.setParameters(query, parameters);
-        query.setMaxResults(1);
-        query.setFirstResult(0);
-        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+        return GenericDAO.this.first(name, type, LockModeType.PESSIMISTIC_WRITE, parameters);
+    }
 
-        final List<S> result = query.getResultList();
-        if (result.isEmpty()) {
-            throw new MissingException("Query '%s' did not block any resource [type: %s]", name, type.getSimpleName());
-        }
-        return result.get(0);
+    @Transactional(propagation = Propagation.MANDATORY)
+    protected List<T> blockingPaginate(final String name, final int maxResults, final int firstResult,
+            final Object... parameters) {
+        return GenericDAO.this.blockingPaginate(name, this.type, maxResults, firstResult, parameters);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    protected <S> List<S> blockingPaginate(final String name, final Class<S> type, final int maxResults,
+            final int firstResult, final Object... parameters) {
+        return GenericDAO.this.paginate(name, type, maxResults, firstResult, LockModeType.PESSIMISTIC_WRITE,
+                parameters);
     }
 
     public T detach(final T entity) {
