@@ -2,6 +2,7 @@ package io.carvill.foundation.email;
 
 import java.util.function.Consumer;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
@@ -23,6 +24,10 @@ public class EmailClient {
     }
 
     public <T extends Recipient> SentResult send(final Email<T> email) {
+        if (CollectionUtils.isEmpty(email.getRecipients())) {
+            return new SentResult();
+        }
+
         final SentResult result = EmailClient.this.emailSender.send(email);
         log.debug("Showing email result: {}", result);
         return result;
