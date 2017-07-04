@@ -12,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -85,6 +87,10 @@ public class Sparkpost extends EmailSender {
                 result.setFailed(request.getRecipients().size());
                 this.logErrors(body.getErrors());
             }
+        } catch (final HttpClientErrorException |  HttpServerErrorException e) {            
+            result.setFailed(request.getRecipients().size());
+            final String message = String.format("Unable to send email because: %s, response: %s", e.getMessage(), e.getResponseBodyAsString());
+            log.warn(message);
         } catch (final RestClientException e) {
             result.setFailed(request.getRecipients().size());
             log.warn("Unable to send email because: {}", e.getMessage(), e);
