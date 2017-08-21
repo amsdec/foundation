@@ -17,9 +17,9 @@ public interface PullQueue {
 
     void remove(String queueUrl, String deletionId) throws QueueException;
 
-    default boolean removeQuietly(final String messageId, final Consumer<Exception> reporter) {
+    default boolean removeQuietly(final String queueUrl, final String messageId, final Consumer<Exception> reporter) {
         try {
-            this.remove(null, messageId);
+            this.remove(queueUrl, messageId);
             return true;
         } catch (final QueueException e) {
             if (reporter != null) {
