@@ -14,8 +14,13 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.DeleteMessageRequest;
+import com.amazonaws.services.sqs.model.DeleteMessageResult;
+import com.amazonaws.services.sqs.model.InvalidIdFormatException;
 import com.amazonaws.services.sqs.model.InvalidMessageContentsException;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.OverLimitException;
+import com.amazonaws.services.sqs.model.ReceiptHandleIsInvalidException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
@@ -25,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.carvill.foundation.push.sns.SNSPushSender;
 import io.carvill.foundation.queues.PullQueue;
+import io.carvill.foundation.queues.QueueMessage;
 import io.carvill.foundation.queues.exception.QueueException;
 
 /**
@@ -95,36 +101,53 @@ public class SQSPullQueue implements PullQueue {
         } catch (final InvalidMessageContentsException e) {
             throw new QueueException("Message content was reported as invalid", e);
         } catch (final SdkBaseException e) {
-            throw new QueueException("General exception happened in queue '%s'", e, queueUrl);
+            throw new QueueException("General exception happened in queue '%s' [add]", e, queueUrl);
         }
     }
 
     @Override
-    public <T extends Serializable> List<T> pull(final String queueUrl, final int maxNumberOfMessages,
-            final Class<T> type) throws QueueException {
+    public <T extends Serializable> List<QueueMessage<T>> pull(final String queueUrl, final Class<T> type)
+            throws QueueException {
         final ReceiveMessageRequest request = new ReceiveMessageRequest();
         request.setQueueUrl(queueUrl);
-        request.setMaxNumberOfMessages(maxNumberOfMessages);
         request.setVisibilityTimeout(this.visibilityTimeout);
 
         try {
             final ReceiveMessageResult response = this.amazonSQS.receiveMessage(request);
             final List<Message> messages = response.getMessages();
-            log.debug("{} of {} message were found in queued {}",
-                    new Object[] { messages.size(), maxNumberOfMessages, queueUrl });
+            log.debug("{} message were found in queued {}", new Object[] { messages.size(), queueUrl });
 
-            final List<T> result = new ArrayList<>(messages.size());
+            final List<QueueMessage<T>> result = new ArrayList<>(messages.size());
             for (final Message message : messages) {
                 final String body = message.getBody();
-                result.add(this.objectMapper.readValue(body, type));
+                final T item = this.objectMapper.readValue(body, type);
+                result.add(new QueueMessage<T>(message.getMessageId(), message.getReceiptHandle(), item));
             }
             return result;
         } catch (final IOException e) {
             throw new QueueException("Unable to deserialize the content as {} type", e, type.getSimpleName());
-        } catch (final InvalidMessageContentsException e) {
-            throw new QueueException("Message content was reported as invalid", e);
+        } catch (final OverLimitException e) {
+            throw new QueueException("The action that you requested would violate a limit", e);
         } catch (final SdkBaseException e) {
-            throw new QueueException("General exception happened in queue '%s'", e, queueUrl);
+            throw new QueueException("General exception happened in queue '%s' [pull]", e, queueUrl);
+        }
+    }
+
+    @Override
+    public void remove(final String queueUrl, final String deletionId) throws QueueException {
+        final DeleteMessageRequest request = new DeleteMessageRequest();
+        request.setQueueUrl(queueUrl);
+        request.setReceiptHandle(deletionId);
+
+        try {
+            this.amazonSQS.deleteMessage(request);
+            log.debug("Messsage {} was deleted from queue {}", deletionId, queueUrl);
+        } catch (final InvalidIdFormatException e) {
+            throw new QueueException("The receipt handle isn't valid for the current version", e);
+        } catch (final ReceiptHandleIsInvalidException e) {
+            throw new QueueException("The receipt handle provided isn't valid", e);
+        } catch (final SdkBaseException e) {
+            throw new QueueException("General exception happened in queue '%s' [delete]", e, queueUrl);
         }
     }
 
