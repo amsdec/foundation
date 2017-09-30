@@ -97,7 +97,7 @@ public class WebPublisherMojo extends AbstractMojo {
             final String key = String.format("%s/%s", this.destinationFolder, file.getName());
             final ObjectMetadata meta = new ObjectMetadata();
             meta.setContentLength(file.length());
-            meta.setCacheControl("max-age=604800");
+            meta.setCacheControl("public, max-age=31536000");
             if (StringUtils.isNotBlank(this.fileContentType)) {
                 meta.setContentType(this.fileContentType);
             }
