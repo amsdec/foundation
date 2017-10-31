@@ -6,7 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//import org.junit.Test;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import io.carvill.foundation.queues.QueueMessage;
@@ -37,14 +38,16 @@ public class SQSPullQueueTest {
         this.taskExecutor.initialize();
     }
 
-    // @Test
+    @Test
+    @Ignore
     public void test01_add() throws QueueException {
         final TestMessage body = new TestMessage(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
         final String messageId = this.queue.add(this.queueUrl, body, 10);
         System.out.println(messageId);
     }
 
-    // @Test
+    @Test
+    @Ignore
     public void test02_pull() throws InterruptedException {
         final AtomicInteger counter = new AtomicInteger(0);
         final AtomicInteger success = new AtomicInteger(0);
@@ -57,7 +60,7 @@ public class SQSPullQueueTest {
                 public void run() {
                     try {
                         final List<QueueMessage<TestMessage>> messages = SQSPullQueueTest.this.queue
-                                .pull(SQSPullQueueTest.this.queueUrl, TestMessage.class);
+                                .pull(SQSPullQueueTest.this.queueUrl, TestMessage.class, 5);
                         System.out.println(messages);
                         if (!messages.isEmpty()) {
                             success.incrementAndGet();
@@ -85,7 +88,8 @@ public class SQSPullQueueTest {
         System.out.println("Errors: " + errors.get());
     }
 
-    // @Test
+    @Test
+    @Ignore
     public void test03_remove() throws QueueException {
         this.queue.remove(this.queueUrl, "message_deletion_id");
     }

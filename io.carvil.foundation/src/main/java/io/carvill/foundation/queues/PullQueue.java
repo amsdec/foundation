@@ -13,7 +13,13 @@ public interface PullQueue {
 
     <T extends Serializable> String add(String queueUrl, T body, int delay) throws QueueException;
 
-    <T extends Serializable> List<QueueMessage<T>> pull(String queueUrl, Class<T> type) throws QueueException;
+    <T extends Serializable> List<QueueMessage<T>> pull(String queueUrl, Class<T> type, int limit)
+            throws QueueException;
+
+    default <T extends Serializable> List<QueueMessage<T>> pull(final String queueUrl, final Class<T> type)
+            throws QueueException {
+        return this.pull(queueUrl, type, 0);
+    }
 
     void remove(String queueUrl, String deletionId) throws QueueException;
 

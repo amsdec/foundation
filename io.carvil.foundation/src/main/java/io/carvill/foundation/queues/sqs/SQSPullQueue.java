@@ -105,16 +105,19 @@ public class SQSPullQueue implements PullQueue {
     }
 
     @Override
-    public <T extends Serializable> List<QueueMessage<T>> pull(final String queueUrl, final Class<T> type)
-            throws QueueException {
+    public <T extends Serializable> List<QueueMessage<T>> pull(final String queueUrl, final Class<T> type,
+            final int limit) throws QueueException {
         final ReceiveMessageRequest request = new ReceiveMessageRequest();
         request.setQueueUrl(queueUrl);
         request.setVisibilityTimeout(this.visibilityTimeout);
+        if (limit > 0) {
+            request.setMaxNumberOfMessages(limit);
+        }
 
         try {
             final ReceiveMessageResult response = this.amazonSQS.receiveMessage(request);
             final List<Message> messages = response.getMessages();
-            log.debug("{} message were found in queued {}", new Object[] { messages.size(), queueUrl });
+            log.debug("{} message were found in queue {}", new Object[] { messages.size(), queueUrl });
 
             final List<QueueMessage<T>> result = new ArrayList<>(messages.size());
             for (final Message message : messages) {
