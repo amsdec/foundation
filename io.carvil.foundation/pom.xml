@@ -214,4 +214,14 @@
 			</plugin>
 		</plugins>
 	</build>
+        <distributionManagement>
+            <repository>
+                <id>nexus-rocket-ti</id>
+                <url>http://nexus.rocket-ti.com:8081/nexus/content/repositories/releases/</url>
+            </repository>
+            <snapshotRepository>
+                <id>nexus-rocket-ti</id>
+                <url>http://nexus.rocket-ti.com:8081/nexus/content/repositories/snapshots/</url>
+            </snapshotRepository>
+        </distributionManagement>
 </project>
