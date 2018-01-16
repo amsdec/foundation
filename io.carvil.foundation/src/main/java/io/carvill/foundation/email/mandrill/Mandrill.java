@@ -1,5 +1,6 @@
 package io.carvill.foundation.email.mandrill;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -39,9 +40,14 @@ public class Mandrill extends EmailSender {
     public <T extends Recipient> SentResult send(final Email<T> email) {
         Assert.isTrue(email instanceof MandrillEmail, "Expected MandrillEmail instance");
         final MandrillEmail<T> info = (MandrillEmail<T>) email;
+        String replyTo = this.getReplyTo();
+        if (StringUtils.isNotBlank(email.getReplyTo())) {
+            replyTo = email.getReplyTo();
+
+        }
 
         final MandrillTemplateMessage<T> message = new MandrillTemplateMessage<T>(info.getTemplate(), info.getSubject(),
-                this.getFromEmail(), this.getFromName()).replyTo(this.getReplyTo()).withHeaders(info.getHeaders())
+                this.getFromEmail(), this.getFromName()).replyTo(replyTo).withHeaders(info.getHeaders())
                         .withAttachments(info.getAttachments()).withRecipients(info.getRecipients())
                         .withMergeLanguage(info.getMandrillMergeLanguage())
                         .applyVariables(info.getRecipients(), info.getVariableProvider());
