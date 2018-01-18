@@ -92,10 +92,9 @@ public class Sparkpost extends EmailSender {
                 result.setFailed(request.getRecipients().size());
                 this.logErrors(body.getErrors());
             }
-        } catch (final HttpClientErrorException |  HttpServerErrorException e) {            
+        } catch (final HttpClientErrorException | HttpServerErrorException e) {
             result.setFailed(request.getRecipients().size());
-            final String message = String.format("Unable to send email because: %s, response: %s", e.getMessage(), e.getResponseBodyAsString());
-            log.warn(message);
+            log.warn("Unable to send email because: {}, response: {}", e.getMessage(), e.getResponseBodyAsString());
         } catch (final RestClientException e) {
             result.setFailed(request.getRecipients().size());
             log.warn("Unable to send email because: {}", e.getMessage(), e);
