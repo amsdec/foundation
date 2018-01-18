@@ -41,6 +41,8 @@ public class SparkpostTemplateMessage<T extends Recipient> implements Serializab
 
     private final List<SparkpostRecipient> recipients;
 
+    private Map<String, Object> substitutionData;
+
     public SparkpostTemplateMessage(final String template, final String subject, final String fromEmail,
             final String fromName) {
         this.options = new HashMap<>();
@@ -61,6 +63,8 @@ public class SparkpostTemplateMessage<T extends Recipient> implements Serializab
         this.content.put("attachments", this.attachments);
 
         this.recipients = new ArrayList<>();
+
+        this.substitutionData = new HashMap<>();
     }
 
     public SparkpostTemplateMessage<T> withRecipients(final List<T> recipients,
@@ -98,6 +102,7 @@ public class SparkpostTemplateMessage<T extends Recipient> implements Serializab
     }
 
     public SparkpostTemplateMessage<T> replyTo(final String replyEmail) {
+        this.substitutionData.put("reply_to", replyEmail);
         return this.withHeader("reply_to", replyEmail);
     }
 
@@ -135,6 +140,10 @@ public class SparkpostTemplateMessage<T extends Recipient> implements Serializab
 
     public List<SparkpostRecipient> getRecipients() {
         return recipients;
+    }
+
+    public Map<String, Object> getSubstitutionData() {
+        return substitutionData;
     }
 
 }

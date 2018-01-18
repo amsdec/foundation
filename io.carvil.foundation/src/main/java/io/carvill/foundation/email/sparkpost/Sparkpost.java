@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -54,8 +55,12 @@ public class Sparkpost extends EmailSender {
     @Override
     public <T extends Recipient> SentResult send(final Email<T> email) {
         Assert.isTrue(email instanceof SparkpostEmail, "Expected SparkpostEmail instance");
+        String replyTo = this.getReplyTo();
+        if (StringUtils.isNotBlank(email.getReplyTo())) {
+            replyTo = email.getReplyTo();
+        }
         final SparkpostTemplateMessage<T> request = new SparkpostTemplateMessage<T>(email.getTemplate(),
-                email.getSubject(), this.getFromEmail(), this.getFromName()).replyTo(this.getReplyTo())
+                email.getSubject(), this.getFromEmail(), this.getFromName()).replyTo(replyTo)
                         .withHeaders(email.getHeaders()).withAttachments(email.getAttachments())
                         .withRecipients(email.getRecipients(), email.getVariableProvider());
         return this.send(request);
