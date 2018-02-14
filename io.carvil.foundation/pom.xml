@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.carvill</groupId>
 	<artifactId>foundation</artifactId>
-	<version>1.0.0.2</version>
+	<version>1.0.0.3</version>
 	
 	<properties>
 		<spring.version>4.3.9.RELEASE</spring.version>
@@ -91,7 +91,7 @@
         </dependency>
 		<dependency>
             <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
+            <artifactId>aws-java-sdk-sns</artifactId>
             <version>${aws.version}</version>
             <exclusions>
                 <exclusion>
