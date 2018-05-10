@@ -25,6 +25,8 @@ public abstract class Email<T extends Recipient> {
 
     private VariableProvider<T> variableProvider;
 
+    private String fromName;
+
     private String replyTo;
 
     public Email(final String template, final String subject) {
@@ -144,6 +146,14 @@ public abstract class Email<T extends Recipient> {
 
     public String getReplyTo() {
         return this.replyTo;
+    }
+
+    public String getFromName() {
+        return this.fromName;
+    }
+
+    public void setFromName(final String fromName) {
+        this.fromName = fromName;
     }
 
 }

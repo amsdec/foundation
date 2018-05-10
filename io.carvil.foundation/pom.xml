@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.carvill</groupId>
 	<artifactId>foundation</artifactId>
-	<version>1.0.0.3</version>
+	<version>1.0.0.4</version>
 	
 	<properties>
 		<spring.version>4.3.9.RELEASE</spring.version>

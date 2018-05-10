@@ -40,14 +40,10 @@ public class Mandrill extends EmailSender {
     public <T extends Recipient> SentResult send(final Email<T> email) {
         Assert.isTrue(email instanceof MandrillEmail, "Expected MandrillEmail instance");
         final MandrillEmail<T> info = (MandrillEmail<T>) email;
-        String replyTo = this.getReplyTo();
-        if (StringUtils.isNotBlank(email.getReplyTo())) {
-            replyTo = email.getReplyTo();
-
-        }
-
+        final String replyTo = StringUtils.defaultIfBlank(email.getReplyTo(), this.getReplyTo());
+        final String fromName = StringUtils.defaultIfBlank(email.getFromName(), this.getFromName());
         final MandrillTemplateMessage<T> message = new MandrillTemplateMessage<T>(info.getTemplate(), info.getSubject(),
-                this.getFromEmail(), this.getFromName()).replyTo(replyTo).withHeaders(info.getHeaders())
+                this.getFromEmail(), fromName).replyTo(replyTo).withHeaders(info.getHeaders())
                         .withAttachments(info.getAttachments()).withRecipients(info.getRecipients())
                         .withMergeLanguage(info.getMandrillMergeLanguage())
                         .applyVariables(info.getRecipients(), info.getVariableProvider());

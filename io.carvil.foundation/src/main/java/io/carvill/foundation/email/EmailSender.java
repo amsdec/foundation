@@ -20,10 +20,23 @@ public abstract class EmailSender {
 
     public abstract <T extends Recipient> Email<T> buildEmail(final String template, final String subject);
 
+    public <T extends Recipient> Email<T> buildEmail(final String fromName, final String template,
+            final String subject) {
+        final Email<T> email = this.buildEmail(template, subject);
+        email.setFromName(fromName);
+        return email;
+    }
+
     public <T extends Recipient> Email<T> buildEmail(final String template, final String subject,
+            final MergeLanguage mergeLanguage) {
+        return this.buildEmail(null, template, subject, mergeLanguage);
+    }
+
+    public <T extends Recipient> Email<T> buildEmail(final String fromName, final String template, final String subject,
             final MergeLanguage mergeLanguage) {
         final Email<T> email = this.buildEmail(template, subject);
         email.setMergeLanguage(mergeLanguage);
+        email.setFromName(fromName);
         return email;
     }
 

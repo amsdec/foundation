@@ -51,19 +51,17 @@ public class Sparkpost extends EmailSender {
 
         final String auth = this.apiKey + ":";
         final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes("UTF-8"));
-        this.authorization = ("Basic " + new String(encodedAuth));
+        this.authorization = "Basic " + new String(encodedAuth);
     }
 
     @Override
     public <T extends Recipient> SentResult send(final Email<T> email) {
         Assert.isTrue(email instanceof SparkpostEmail, "Expected SparkpostEmail instance");
-        String replyTo = this.getReplyTo();
-        if (StringUtils.isNotBlank(email.getReplyTo())) {
-            replyTo = email.getReplyTo();
-        }
+        final String replyTo = StringUtils.defaultIfBlank(email.getReplyTo(), this.getReplyTo());
+        final String fromName = StringUtils.defaultIfBlank(email.getFromName(), this.getFromName());
         final SparkpostTemplateMessage<T> request = new SparkpostTemplateMessage<T>(email.getTemplate(),
-                email.getSubject(), this.getFromEmail(), this.getFromName()).replyTo(replyTo)
-                        .withHeaders(email.getHeaders()).withAttachments(email.getAttachments())
+                email.getSubject(), this.getFromEmail(), fromName).replyTo(replyTo).withHeaders(email.getHeaders())
+                        .withAttachments(email.getAttachments())
                         .withRecipients(email.getRecipients(), email.getVariableProvider());
         return this.send(request);
     }
